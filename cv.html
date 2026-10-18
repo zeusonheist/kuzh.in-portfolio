@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CV | Kushal Singh Shresth</title><style data-startup-layout>
+.mobile-project{display:none}
+@media(max-width:600px){.mobile-project{display:block}main>.design[data-artwork-layout="desktop"]{display:none}}
+@media(min-width:601px){main>.design[data-artwork-layout="mobile"]{display:none}}
+</style><script data-image-loading>// SVG image definitions load when the artwork that uses them approaches view.
+(() => {
+  let watched = new WeakSet();
+  let targets = new WeakMap();
+  let currentMain = null;
+  let modelsLoading = false;
+  const deferred = new Set();
+  function load(image) {
+    const source = image.getAttribute('data-image-src');
+    if (!source) return;
+    if (modelsLoading) { deferred.add(image); return; }
+    image.setAttribute('href', source);
+    image.removeAttribute('data-image-src');
+  }
+  function modelLoading(value) {
+    modelsLoading = value;
+    if (!value) {
+      for (const image of deferred) load(image);
+      deferred.clear();
+    }
+  }
+  const observer = window.IntersectionObserver ? new window.IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      for (const image of targets.get(entry.target) || []) load(image);
+      observer.unobserve(entry.target);
+    }
+  }, {rootMargin: '500px 0px'}) : null;
+
+  function observe(main) {
+    if (main !== currentMain) {
+      observer?.disconnect();
+      watched = new WeakSet();
+      targets = new WeakMap();
+      currentMain = main;
+      deferred.clear();
+    }
+    for (const svg of main.querySelectorAll('svg')) {
+      if (watched.has(svg)) continue;
+      watched.add(svg);
+      const images = [...svg.querySelectorAll('image[data-image-src]')].filter(image => image.ownerSVGElement === svg);
+      if (!images.length) continue;
+      if (!observer) { images.forEach(load); continue; }
+      const pending = new Set(images);
+      const registry = new Map([...svg.querySelectorAll('[id]')].map(node => [node.id, node]));
+      function dependencies(node, seen = new Set()) {
+        if (seen.has(node)) return new Set();
+        seen.add(node);
+        const result = new Set(pending.has(node) ? [node] : []);
+        for (const current of [node, ...node.querySelectorAll('*')]) {
+          for (const attribute of current.attributes) {
+            const references = [...attribute.value.matchAll(/url\(#([^\)]+)\)/g)].map(match => match[1]);
+            if (current.localName === 'use' && ['href', 'xlink:href'].includes(attribute.name) && attribute.value.startsWith('#')) references.push(attribute.value.slice(1));
+            for (const id of references) {
+              const referenced = registry.get(id);
+              if (referenced) for (const image of dependencies(referenced, seen)) result.add(image);
+            }
+          }
+        }
+        return result;
+      }
+      for (const node of svg.querySelectorAll('[fill], [stroke], image[data-image-src]')) {
+        if (node.ownerSVGElement !== svg || node.closest('defs')) continue;
+        const needed = dependencies(node);
+        if (!needed.size) continue;
+        targets.set(node, needed);
+        observer.observe(node);
+      }
+    }
+  }
+  window.portfolioImages = {observe, modelLoading};
+})();
+</script><script data-portfolio-startup>// Runs in the head, independently of model-viewer and the main module graph.
+(() => {
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  const entryURL = location.href;
+  let interacted = false;
+  const media = matchMedia('(max-width: 600px)');
+
+  function resetScroll() {
+    if (!interacted && !location.hash && location.href === entryURL) {
+      window.scrollTo({top: 0, behavior: 'instant'});
+    }
+  }
+
+  function mountArtwork(main, phoneLayout) {
+    if (!main) return;
+    const desktop = main.querySelector('template.desktop-artwork');
+    if (!desktop) return;
+    const phone = main.querySelector('template.phone-artwork');
+    const drawn = main.querySelector(':scope > .design');
+    const desired = phoneLayout ? phone : desktop;
+    if (drawn && (phone ? drawn.dataset.artworkLayout !== (phoneLayout ? 'mobile' : 'desktop') : phoneLayout)) {
+      (drawn.dataset.artworkLayout === 'mobile' ? phone : desktop).content.append(drawn);
+    }
+    if (desired?.content.firstElementChild) {
+      const artwork = desired.content.firstElementChild;
+      artwork.dataset.artworkLayout = phoneLayout ? 'mobile' : 'desktop';
+      main.prepend(artwork);
+    }
+  }
+
+  function ready() {
+    mountArtwork(document.querySelector('main'), media.matches);
+    window.portfolioImages?.modelLoading(Boolean(document.querySelector('main')?.querySelector('[data-model-slot]')));
+    window.portfolioImages?.observe(document.querySelector('main'));
+    resetScroll();
+    requestAnimationFrame(resetScroll);
+  }
+
+  window.portfolioStartup = {mountArtwork, resetScroll, ready};
+  media.addEventListener('change', () => mountArtwork(document.querySelector('main'), media.matches));
+  for (const event of ['pointerdown', 'touchstart', 'wheel', 'keydown']) {
+    window.addEventListener(event, () => { interacted = true; }, {once: true, passive: true});
+  }
+  window.addEventListener('pageshow', event => { if (!event.persisted) resetScroll(); });
+  resetScroll();
+})();
+</script><link rel="stylesheet" href="site.css"><link rel="preload" href="fonts/project-details.woff" as="font" type="font/woff" crossorigin></head>
+<body data-page="cv" style="--page-background:#F1F1F1">
+<main class="placeholder-page">
+<nav class="site-header" aria-label="Page" style="color:black"><a class="site-home" href="index.html" aria-label="go back to home"><span class="original-lettering native-lettering" data-native-text="true">&lt; go back to home</span></a><div class="site-header-links"><a class="site-secondary-link" href="illustrations.html" aria-label="Illustrations"><span class="original-lettering native-lettering" data-native-text="true">illustrations</span></a><a class="site-secondary-link" href="about.html" aria-label="About me"><span class="original-lettering native-lettering" data-native-text="true">about me</span></a><a href="index.html#contact" aria-label="contact"><span class="original-lettering native-lettering" data-native-text="true">contact</span></a></div></nav>
+<div class="site-header-space" aria-hidden="true"></div>
+<section class="placeholder-content" aria-labelledby="placeholder-title"><h1 id="placeholder-title">CV</h1><p>The CV will be added here.</p></section>
+<nav class="project-footer-links site-footer" aria-label="Portfolio sections" style="color:black"><a href="index.html" aria-label="Home"><span class="original-lettering native-lettering" data-native-text="true">&lt; go back to home</span></a><a href="index.html#contact" aria-label="Contact"><span class="original-lettering native-lettering" data-native-text="true">contact</span></a><a href="illustrations.html" aria-label="Illustrations"><span class="original-lettering native-lettering" data-native-text="true">illustrations</span></a><a href="about.html" aria-label="About me"><span class="original-lettering native-lettering" data-native-text="true">about me</span></a></nav><nav class="mobile-contact-footer" aria-label="Portfolio links" style="color:black"><a href="index.html">home</a><a href="index.html#contact">contact</a><a href="illustrations.html">illustrations</a><a href="about.html">about me</a></nav>
+</main><script>window.portfolioStartup.ready();</script></body></html>

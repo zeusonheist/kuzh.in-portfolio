@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Illustrations | Kushal Singh Shresth</title><style data-startup-layout>
+.mobile-project{display:none}
+@media(max-width:600px){.mobile-project{display:block}main>.design[data-artwork-layout="desktop"]{display:none}}
+@media(min-width:601px){main>.design[data-artwork-layout="mobile"]{display:none}}
+</style><script data-image-loading>// SVG image definitions load when the artwork that uses them approaches view.
+(() => {
+  let watched = new WeakSet();
+  let targets = new WeakMap();
+  let currentMain = null;
+  let modelsLoading = false;
+  const deferred = new Set();
+  function load(image) {
+    const source = image.getAttribute('data-image-src');
+    if (!source) return;
+    if (modelsLoading) { deferred.add(image); return; }
+    image.setAttribute('href', source);
+    image.removeAttribute('data-image-src');
+  }
+  function modelLoading(value) {
+    modelsLoading = value;
+    if (!value) {
+      for (const image of deferred) load(image);
+      deferred.clear();
+    }
+  }
+  const observer = window.IntersectionObserver ? new window.IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      for (const image of targets.get(entry.target) || []) load(image);
+      observer.unobserve(entry.target);
+    }
+  }, {rootMargin: '500px 0px'}) : null;
+
+  function observe(main) {
+    if (main !== currentMain) {
+      observer?.disconnect();
+      watched = new WeakSet();
+      targets = new WeakMap();
+      currentMain = main;
+      deferred.clear();
+    }
+    for (const svg of main.querySelectorAll('svg')) {
+      if (watched.has(svg)) continue;
+      watched.add(svg);
+      const images = [...svg.querySelectorAll('image[data-image-src]')].filter(image => image.ownerSVGElement === svg);
+      if (!images.length) continue;
+      if (!observer) { images.forEach(load); continue; }
+      const pending = new Set(images);
+      const registry = new Map([...svg.querySelectorAll('[id]')].map(node => [node.id, node]));
+      function dependencies(node, seen = new Set()) {
+        if (seen.has(node)) return new Set();
+        seen.add(node);
+        const result = new Set(pending.has(node) ? [node] : []);
+        for (const current of [node, ...node.querySelectorAll('*')]) {
+          for (const attribute of current.attributes) {
+            const references = [...attribute.value.matchAll(/url\(#([^\)]+)\)/g)].map(match => match[1]);
+            if (current.localName === 'use' && ['href', 'xlink:href'].includes(attribute.name) && attribute.value.startsWith('#')) references.push(attribute.value.slice(1));
+            for (const id of references) {
+              const referenced = registry.get(id);
+              if (referenced) for (const image of dependencies(referenced, seen)) result.add(image);
+            }
+          }
+        }
+        return result;
+      }
+      for (const node of svg.querySelectorAll('[fill], [stroke], image[data-image-src]')) {
+        if (node.ownerSVGElement !== svg || node.closest('defs')) continue;
+        const needed = dependencies(node);
+        if (!needed.size) continue;
+        targets.set(node, needed);
+        observer.observe(node);
+      }
+    }
+  }
+  window.portfolioImages = {observe, modelLoading};
+})();
+</script><script data-portfolio-startup>// Runs in the head, independently of model-viewer and the main module graph.
+(() => {
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  const entryURL = location.href;
+  let interacted = false;
+  const media = matchMedia('(max-width: 600px)');
+
+  function resetScroll() {
+    if (!interacted && !location.hash && location.href === entryURL) {
+      window.scrollTo({top: 0, behavior: 'instant'});
+    }
+  }
+
+  function mountArtwork(main, phoneLayout) {
+    if (!main) return;
+    const desktop = main.querySelector('template.desktop-artwork');
+    if (!desktop) return;
+    const phone = main.querySelector('template.phone-artwork');
+    const drawn = main.querySelector(':scope > .design');
+    const desired = phoneLayout ? phone : desktop;
+    if (drawn && (phone ? drawn.dataset.artworkLayout !== (phoneLayout ? 'mobile' : 'desktop') : phoneLayout)) {
+      (drawn.dataset.artworkLayout === 'mobile' ? phone : desktop).content.append(drawn);
+    }
+    if (desired?.content.firstElementChild) {
+      const artwork = desired.content.firstElementChild;
+      artwork.dataset.artworkLayout = phoneLayout ? 'mobile' : 'desktop';
+      main.prepend(artwork);
+    }
+  }
+
+  function ready() {
+    mountArtwork(document.querySelector('main'), media.matches);
+    window.portfolioImages?.modelLoading(Boolean(document.querySelector('main')?.querySelector('[data-model-slot]')));
+    window.portfolioImages?.observe(document.querySelector('main'));
+    resetScroll();
+    requestAnimationFrame(resetScroll);
+  }
+
+  window.portfolioStartup = {mountArtwork, resetScroll, ready};
+  media.addEventListener('change', () => mountArtwork(document.querySelector('main'), media.matches));
+  for (const event of ['pointerdown', 'touchstart', 'wheel', 'keydown']) {
+    window.addEventListener(event, () => { interacted = true; }, {once: true, passive: true});
+  }
+  window.addEventListener('pageshow', event => { if (!event.persisted) resetScroll(); });
+  resetScroll();
+})();
+</script><link rel="stylesheet" href="site.css"><link rel="preload" href="fonts/project-details.woff" as="font" type="font/woff" crossorigin></head>
+<body data-page="illustrations" style="--page-background:#F1F1F1">
+<main class="placeholder-page illustrations-page">
+<nav class="site-header" aria-label="Page" style="color:black"><a class="site-home" href="index.html" aria-label="go back to home"><span class="original-lettering native-lettering" data-native-text="true">&lt; go back to home</span></a><div class="site-header-links"><a class="site-secondary-link" href="about.html" aria-label="About me"><span class="original-lettering native-lettering" data-native-text="true">about me</span></a><a href="index.html#contact" aria-label="contact"><span class="original-lettering native-lettering" data-native-text="true">contact</span></a></div></nav>
+<div class="site-header-space" aria-hidden="true"></div>
+<section class="illustrations-content" aria-labelledby="illustrations-title"><header class="illustrations-mobile-intro">
+<a class="illustrations-mobile-home" href="index.html" aria-label="go back to home">&lt; go back to home</a>
+<h1><img src="illustrations-title.png" width="303" height="69" alt="Illustrations"></h1>
+<span class="illustrations-mobile-rule" aria-hidden="true"></span>
+<p>All of the illustrations were done using a pen tablet or an android tablet</p>
+</header><header class="illustrations-intro"><h1 id="illustrations-title" aria-label="Illustrations"><img src="illustrations-title.png" width="303" height="69" alt="Illustrations"></h1><p>All of the illustrations were done using a pen tablet or an android tablet</p></header><div class="illustration-gallery"><figure class="illustration-item"><a href="illustrations/horse-and-bird.png" aria-label="View full-resolution image: A running white horse and a bird against a black background">
+<img src="illustrations/horse-and-bird-960.webp" srcset="illustrations/horse-and-bird-480.webp 480w, illustrations/horse-and-bird-960.webp 960w, illustrations/horse-and-bird-1600.webp 1600w, illustrations/horse-and-bird.png 2284w" sizes="(max-width:760px) calc(100vw - 32px), (max-width:1280px) calc(50vw - 28px), 612px" width="2284" height="1340" alt="A running white horse and a bird against a black background" loading="eager" decoding="async">
+</a></figure><figure class="illustration-item"><a href="illustrations/sailboat-and-clouds.jpg" aria-label="View full-resolution image: A white sailboat beneath bright clouds over a blue sea">
+<img src="illustrations/sailboat-and-clouds.jpg" srcset="illustrations/sailboat-and-clouds.jpg 1200w" sizes="(max-width:760px) calc(100vw - 32px), (max-width:1280px) calc(50vw - 28px), 612px" width="1200" height="1330" alt="A white sailboat beneath bright clouds over a blue sea" loading="eager" decoding="async">
+</a></figure><figure class="illustration-item"><a href="illustrations/sky-and-pylon.jpg" aria-label="View full-resolution image: An electricity pylon and wires beneath a cloud-filled blue sky">
+<img src="illustrations/sky-and-pylon-960.webp" srcset="illustrations/sky-and-pylon-480.webp 480w, illustrations/sky-and-pylon-960.webp 960w, illustrations/sky-and-pylon-1600.webp 1600w, illustrations/sky-and-pylon.jpg 3000w" sizes="(max-width:760px) calc(100vw - 32px), (max-width:1280px) calc(50vw - 28px), 612px" width="3000" height="3000" alt="An electricity pylon and wires beneath a cloud-filled blue sky" loading="lazy" decoding="async">
+</a></figure><figure class="illustration-item"><a href="illustrations/portrait.jpg" aria-label="View full-resolution image: A monochrome portrait of a woman with dark hair">
+<img src="illustrations/portrait-960.webp" srcset="illustrations/portrait-480.webp 480w, illustrations/portrait-960.webp 960w, illustrations/portrait-1600.webp 1600w, illustrations/portrait.jpg 2858w" sizes="(max-width:760px) calc(100vw - 32px), (max-width:1280px) calc(50vw - 28px), 612px" width="2858" height="3090" alt="A monochrome portrait of a woman with dark hair" loading="lazy" decoding="async">
+</a></figure><figure class="illustration-item"><a href="illustrations/grassland.jpg" aria-label="View full-resolution image: A sunlit green meadow filled with small purple flowers">
+<img src="illustrations/grassland-960.webp" srcset="illustrations/grassland-480.webp 480w, illustrations/grassland-960.webp 960w, illustrations/grassland-1600.webp 1600w, illustrations/grassland.jpg 1920w" sizes="(max-width:760px) calc(100vw - 32px), (max-width:1280px) calc(50vw - 28px), 612px" width="1920" height="1080" alt="A sunlit green meadow filled with small purple flowers" loading="lazy" decoding="async">
+</a></figure><figure class="illustration-item"><a href="illustrations/ink-character.jpg" aria-label="View full-resolution image: A black-and-white ink illustration of an anime character">
+<img src="illustrations/ink-character-960.webp" srcset="illustrations/ink-character-480.webp 480w, illustrations/ink-character-960.webp 960w, illustrations/ink-character.jpg 1920w" sizes="(max-width:760px) calc(100vw - 32px), (max-width:1280px) calc(50vw - 28px), 612px" width="1920" height="1440" alt="A black-and-white ink illustration of an anime character" loading="lazy" decoding="async">
+</a></figure><figure class="illustration-item"><a href="illustrations/floral-spider.jpg" aria-label="View full-resolution image: A white spider with flowers in its body against a black background">
+<img src="illustrations/floral-spider-960.webp" srcset="illustrations/floral-spider-480.webp 480w, illustrations/floral-spider-960.webp 960w, illustrations/floral-spider-1600.webp 1600w, illustrations/floral-spider.jpg 3000w" sizes="(max-width:760px) calc(100vw - 32px), (max-width:1280px) calc(50vw - 28px), 612px" width="3000" height="3000" alt="A white spider with flowers in its body against a black background" loading="lazy" decoding="async">
+</a></figure><figure class="illustration-item"><a href="illustrations/coastal-clouds.jpg" aria-label="View full-resolution image: Towering white and lavender clouds over a turquoise sea and seaside railing">
+<img src="illustrations/coastal-clouds.jpg" srcset="illustrations/coastal-clouds-480.webp 480w, illustrations/coastal-clouds.jpg 1080w" sizes="(max-width:760px) calc(100vw - 32px), (max-width:1280px) calc(50vw - 28px), 612px" width="1080" height="1920" alt="Towering white and lavender clouds over a turquoise sea and seaside railing" loading="lazy" decoding="async">
+</a></figure><figure class="illustration-item"><a href="illustrations/daisies-and-clouds.jpg" aria-label="View full-resolution image: White daisies and grass beneath a deep blue sky with soft pink clouds">
+<img src="illustrations/daisies-and-clouds.jpg" srcset="illustrations/daisies-and-clouds.jpg 1080w" sizes="(max-width:760px) calc(100vw - 32px), (max-width:1280px) calc(50vw - 28px), 612px" width="1080" height="1612" alt="White daisies and grass beneath a deep blue sky with soft pink clouds" loading="lazy" decoding="async">
+</a></figure><figure class="illustration-item"><a href="illustrations/koi-pond.png" aria-label="View full-resolution image: Two orange and white koi swimming through a blue-green pond with lily pads">
+<img src="illustrations/koi-pond-960.webp" srcset="illustrations/koi-pond-480.webp 480w, illustrations/koi-pond-960.webp 960w, illustrations/koi-pond-1600.webp 1600w, illustrations/koi-pond.png 4500w" sizes="(max-width:760px) calc(100vw - 32px), (max-width:1280px) calc(50vw - 28px), 612px" width="4500" height="5400" alt="Two orange and white koi swimming through a blue-green pond with lily pads" loading="lazy" decoding="async">
+</a></figure><figure class="illustration-item"><a href="illustrations/storefront.png" aria-label="View full-resolution image: A colorful illustrated storefront with an orange sign, plants, and purple walls">
+<img src="illustrations/storefront-960.webp" srcset="illustrations/storefront-480.webp 480w, illustrations/storefront-960.webp 960w, illustrations/storefront-1600.webp 1600w, illustrations/storefront.png 4500w" sizes="(max-width:760px) calc(100vw - 32px), (max-width:1280px) calc(50vw - 28px), 612px" width="4500" height="5400" alt="A colorful illustrated storefront with an orange sign, plants, and purple walls" loading="lazy" decoding="async">
+</a></figure></div></section><nav class="illustrations-mobile-footer" aria-label="Portfolio sections">
+<a href="about.html">about me</a><a href="index.html#contact">contact</a>
+</nav>
+<nav class="project-footer-links site-footer" aria-label="Portfolio sections" style="color:black"><a href="index.html" aria-label="Home"><span class="original-lettering native-lettering" data-native-text="true">&lt; go back to home</span></a><a href="index.html#contact" aria-label="Contact"><span class="original-lettering native-lettering" data-native-text="true">contact</span></a><a href="about.html" aria-label="About me"><span class="original-lettering native-lettering" data-native-text="true">about me</span></a></nav><nav class="mobile-contact-footer" aria-label="Portfolio links" style="color:black"><a href="index.html">home</a><a href="index.html#contact">contact</a><a href="about.html">about me</a></nav>
+</main><script>window.portfolioStartup.ready();</script></body></html>

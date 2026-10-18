@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Industrial design portfolio of Kushal Singh Shresth. Explore Hallmark, Soundboy, Tensile and Wisp.">
+<title>About | Kushal Singh Shresth</title><style data-startup-layout>
+.mobile-project{display:none}
+@media(max-width:600px){.mobile-project{display:block}main>.design[data-artwork-layout="desktop"]{display:none}}
+@media(min-width:601px){main>.design[data-artwork-layout="mobile"]{display:none}}
+</style><script data-image-loading>// SVG image definitions load when the artwork that uses them approaches view.
+(() => {
+  let watched = new WeakSet();
+  let targets = new WeakMap();
+  let currentMain = null;
+  let modelsLoading = false;
+  const deferred = new Set();
+  function load(image) {
+    const source = image.getAttribute('data-image-src');
+    if (!source) return;
+    if (modelsLoading) { deferred.add(image); return; }
+    image.setAttribute('href', source);
+    image.removeAttribute('data-image-src');
+  }
+  function modelLoading(value) {
+    modelsLoading = value;
+    if (!value) {
+      for (const image of deferred) load(image);
+      deferred.clear();
+    }
+  }
+  const observer = window.IntersectionObserver ? new window.IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      for (const image of targets.get(entry.target) || []) load(image);
+      observer.unobserve(entry.target);
+    }
+  }, {rootMargin: '500px 0px'}) : null;
+
+  function observe(main) {
+    if (main !== currentMain) {
+      observer?.disconnect();
+      watched = new WeakSet();
+      targets = new WeakMap();
+      currentMain = main;
+      deferred.clear();
+    }
+    for (const svg of main.querySelectorAll('svg')) {
+      if (watched.has(svg)) continue;
+      watched.add(svg);
+      const images = [...svg.querySelectorAll('image[data-image-src]')].filter(image => image.ownerSVGElement === svg);
+      if (!images.length) continue;
+      if (!observer) { images.forEach(load); continue; }
+      const pending = new Set(images);
+      const registry = new Map([...svg.querySelectorAll('[id]')].map(node => [node.id, node]));
+      function dependencies(node, seen = new Set()) {
+        if (seen.has(node)) return new Set();
+        seen.add(node);
+        const result = new Set(pending.has(node) ? [node] : []);
+        for (const current of [node, ...node.querySelectorAll('*')]) {
+          for (const attribute of current.attributes) {
+            const references = [...attribute.value.matchAll(/url\(#([^\)]+)\)/g)].map(match => match[1]);
+            if (current.localName === 'use' && ['href', 'xlink:href'].includes(attribute.name) && attribute.value.startsWith('#')) references.push(attribute.value.slice(1));
+            for (const id of references) {
+              const referenced = registry.get(id);
+              if (referenced) for (const image of dependencies(referenced, seen)) result.add(image);
+            }
+          }
+        }
+        return result;
+      }
+      for (const node of svg.querySelectorAll('[fill], [stroke], image[data-image-src]')) {
+        if (node.ownerSVGElement !== svg || node.closest('defs')) continue;
+        const needed = dependencies(node);
+        if (!needed.size) continue;
+        targets.set(node, needed);
+        observer.observe(node);
+      }
+    }
+  }
+  window.portfolioImages = {observe, modelLoading};
+})();
+</script><script data-portfolio-startup>// Runs in the head, independently of model-viewer and the main module graph.
+(() => {
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  const entryURL = location.href;
+  let interacted = false;
+  const media = matchMedia('(max-width: 600px)');
+
+  function resetScroll() {
+    if (!interacted && !location.hash && location.href === entryURL) {
+      window.scrollTo({top: 0, behavior: 'instant'});
+    }
+  }
+
+  function mountArtwork(main, phoneLayout) {
+    if (!main) return;
+    const desktop = main.querySelector('template.desktop-artwork');
+    if (!desktop) return;
+    const phone = main.querySelector('template.phone-artwork');
+    const drawn = main.querySelector(':scope > .design');
+    const desired = phoneLayout ? phone : desktop;
+    if (drawn && (phone ? drawn.dataset.artworkLayout !== (phoneLayout ? 'mobile' : 'desktop') : phoneLayout)) {
+      (drawn.dataset.artworkLayout === 'mobile' ? phone : desktop).content.append(drawn);
+    }
+    if (desired?.content.firstElementChild) {
+      const artwork = desired.content.firstElementChild;
+      artwork.dataset.artworkLayout = phoneLayout ? 'mobile' : 'desktop';
+      main.prepend(artwork);
+    }
+  }
+
+  function ready() {
+    mountArtwork(document.querySelector('main'), media.matches);
+    window.portfolioImages?.modelLoading(Boolean(document.querySelector('main')?.querySelector('[data-model-slot]')));
+    window.portfolioImages?.observe(document.querySelector('main'));
+    resetScroll();
+    requestAnimationFrame(resetScroll);
+  }
+
+  window.portfolioStartup = {mountArtwork, resetScroll, ready};
+  media.addEventListener('change', () => mountArtwork(document.querySelector('main'), media.matches));
+  for (const event of ['pointerdown', 'touchstart', 'wheel', 'keydown']) {
+    window.addEventListener(event, () => { interacted = true; }, {once: true, passive: true});
+  }
+  window.addEventListener('pageshow', event => { if (!event.persisted) resetScroll(); });
+  resetScroll();
+})();
+</script><link rel="stylesheet" href="site.css"><link rel="preload" href="fonts/project-details.woff" as="font" type="font/woff" crossorigin></head>
+<body data-page="about" style="--page-background:#F1F1F1">
+<a class="skip-link" href="#work">Skip to projects</a>
+<main id="portfolio"><nav class="site-header" aria-label="Page" style="color:black"><a class="site-home" href="index.html" aria-label="go back to home"><span class="original-lettering native-lettering" data-native-text="true">&lt; go back to home</span></a><div class="site-header-links"><a class="site-secondary-link" href="cv.html" aria-label="View CV"><span class="original-lettering native-lettering" data-native-text="true">view cv</span></a><a class="site-secondary-link" href="illustrations.html" aria-label="Illustrations"><span class="original-lettering native-lettering" data-native-text="true">illustrations</span></a><a href="index.html#contact" aria-label="contact"><span class="original-lettering native-lettering" data-native-text="true">contact</span></a></div></nav><div class="site-header-space" aria-hidden="true"></div><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1280" height="530" viewBox="0 0 1280 530" fill="none" class="design" aria-label="Kushal Singh Shresth — About" role="group">
+<g clip-path="url(#clip0_65_1067)">
+<rect width="1280" height="753" fill="#F1F1F1" />
+<rect x="175" y="91.0029" width="45.1471" height="87.7507" transform="rotate(-85.4193 175 91.0029)" fill="url(#pattern0_65_1067)" />
+<foreignObject x="20.9600" y="23.4624" width="209.6840" height="72.3828" data-native-text="true" style="overflow:visible;pointer-events:auto"><div xmlns="http://www.w3.org/1999/xhtml" class="native-copy" style="position:relative;color:black;font-family:&quot;Be Vietnam Pro&quot;,sans-serif;font-size:43.8684px;line-height:1.25;margin:0;overflow-wrap:break-word;user-select:text"><h1 style="margin:0;font:inherit;white-space:pre-line">About me</h1></div></foreignObject><foreignObject x="21.2800" y="87.9586" width="574.9260" height="49.1525" data-native-text="true" style="overflow:visible;pointer-events:auto"><div xmlns="http://www.w3.org/1999/xhtml" class="native-copy" style="position:relative;color:black;font-family:&quot;Be Vietnam Pro&quot;,sans-serif;font-size:16.9492px;line-height:1.25;margin:0;overflow-wrap:break-word;user-select:text"><p style="margin:0;font:inherit;white-space:pre-line">I am just a guy with an interest in drawing, sometimes i take it to a physical product, other times it becomes an illustration</p></div></foreignObject><foreignObject x="31.2310" y="552.5234" width="139.3170" height="55.9960" data-native-text="true" style="overflow:visible;pointer-events:auto"><div xmlns="http://www.w3.org/1999/xhtml" class="native-copy" style="position:relative;color:black;font-family:&quot;Be Vietnam Pro&quot;,sans-serif;font-size:7.6271px;line-height:1.25;margin:0;overflow-wrap:break-word;user-select:text"><p style="position:absolute;top:0.0000px;left:0;margin:0;font-size:6.2212px;line-height:1.2;font-weight:400">linkedin.com/in/kushal-shresth-a55327279/</p><p style="position:absolute;top:9.0000px;left:0;margin:0;font-size:8.4354px;line-height:1.2;font-weight:400">kushalsshresth@gmail.com</p><p style="position:absolute;top:18.2100px;left:0;margin:0;font-size:6.3975px;line-height:1.2;font-weight:400">+91 8757890817</p><p style="position:absolute;top:27.0000px;left:0;margin:0;font-size:7.6291px;line-height:1.2;font-weight:400">@kushaalshresth</p><p style="position:absolute;top:36.0000px;left:0;margin:0;font-size:7.8949px;line-height:1.2;font-weight:400">behance.net/kuzl</p><p style="position:absolute;top:45.0000px;left:0;margin:0;font-size:6.6633px;line-height:1.2;font-weight:400">www.kuzh.in</p></div></foreignObject><g clip-path="url(#clip1_65_1067)">
+<path d="M25.5417 553.875C25.6964 553.875 25.8447 553.936 25.9541 554.046C26.0635 554.155 26.125 554.304 26.125 554.458V558.542C26.125 558.696 26.0635 558.845 25.9541 558.954C25.8447 559.064 25.6964 559.125 25.5417 559.125H21.4583C21.3036 559.125 21.1553 559.064 21.0459 558.954C20.9365 558.845 20.875 558.696 20.875 558.542V554.458C20.875 554.304 20.9365 554.155 21.0459 554.046C21.1553 553.936 21.3036 553.875 21.4583 553.875H25.5417ZM25.3958 558.396V556.85C25.3958 556.598 25.2957 556.356 25.1173 556.178C24.939 555.999 24.6972 555.899 24.445 555.899C24.1971 555.899 23.9083 556.051 23.7683 556.278V555.955H22.9546V558.396H23.7683V556.958C23.7683 556.733 23.9492 556.55 24.1738 556.55C24.282 556.55 24.3859 556.593 24.4625 556.669C24.5391 556.746 24.5821 556.85 24.5821 556.958V558.396H25.3958ZM22.0067 555.497C22.1366 555.497 22.2613 555.445 22.3531 555.353C22.445 555.261 22.4967 555.137 22.4967 555.007C22.4967 554.735 22.2779 554.514 22.0067 554.514C21.8759 554.514 21.7506 554.566 21.6581 554.658C21.5657 554.751 21.5137 554.876 21.5137 555.007C21.5137 555.278 21.7354 555.497 22.0067 555.497ZM22.4121 558.396V555.955H21.6042V558.396H22.4121Z" fill="black" />
+</g>
+<path d="M21 567C20.8625 567 20.7448 566.951 20.647 566.853C20.5492 566.755 20.5002 566.638 20.5 566.5V563.5C20.5 563.362 20.549 563.245 20.647 563.147C20.745 563.049 20.8627 563 21 563H25C25.1375 563 25.2553 563.049 25.3533 563.147C25.4513 563.245 25.5002 563.363 25.5 563.5V566.5C25.5 566.638 25.4511 566.755 25.3533 566.853C25.2554 566.951 25.1377 567 25 567H21ZM23 565.25L25 564V563.5L23 564.75L21 563.5V564L23 565.25Z" fill="black" />
+<g clip-path="url(#clip2_65_1067)">
+<path d="M21.655 573.697C22.015 574.405 22.595 574.982 23.3025 575.345L23.8525 574.795C23.92 574.728 24.02 574.705 24.1075 574.735C24.3875 574.827 24.69 574.878 25 574.878C25.1375 574.878 25.25 574.99 25.25 575.128V576C25.25 576.138 25.1375 576.25 25 576.25C22.6525 576.25 20.75 574.348 20.75 572C20.75 571.862 20.8625 571.75 21 571.75H21.875C22.0125 571.75 22.125 571.862 22.125 572C22.125 572.312 22.175 572.613 22.2675 572.893C22.295 572.98 22.275 573.078 22.205 573.148L21.655 573.697Z" fill="black" />
+</g>
+<g clip-path="url(#clip3_65_1067)">
+<path d="M23.2571 580.5C23.5384 580.501 23.6811 580.502 23.8044 580.506L23.8529 580.507C23.9089 580.509 23.9641 580.512 24.0309 580.515C24.2969 580.527 24.4784 580.57 24.6376 580.631C24.8026 580.695 24.9416 580.781 25.0806 580.919C25.2078 581.044 25.3062 581.196 25.3689 581.362C25.4306 581.522 25.4726 581.703 25.4851 581.969C25.4881 582.036 25.4906 582.091 25.4926 582.148L25.4941 582.196C25.4979 582.319 25.4994 582.462 25.4999 582.743L25.5001 582.93V583.257C25.5008 583.439 25.4988 583.622 25.4944 583.804L25.4929 583.852C25.4909 583.909 25.4884 583.964 25.4854 584.03C25.4729 584.297 25.4304 584.478 25.3689 584.637C25.3062 584.804 25.2078 584.956 25.0806 585.081C24.9557 585.208 24.8045 585.306 24.6376 585.369C24.4784 585.431 24.2969 585.473 24.0309 585.485L23.8529 585.492L23.8044 585.494C23.6811 585.497 23.5384 585.499 23.2571 585.5L23.0706 585.5H22.7434C22.561 585.501 22.3785 585.499 22.1961 585.494L22.1476 585.493C22.0883 585.491 22.029 585.488 21.9696 585.485C21.7036 585.473 21.5221 585.431 21.3626 585.369C21.1958 585.306 21.0448 585.208 20.9199 585.081C20.7926 584.956 20.6942 584.804 20.6314 584.637C20.5696 584.478 20.5276 584.297 20.5151 584.03L20.5076 583.852L20.5064 583.804C20.5018 583.622 20.4997 583.439 20.5001 583.257V582.743C20.4995 582.561 20.5013 582.378 20.5056 582.196L20.5074 582.148C20.5094 582.091 20.5119 582.036 20.5149 581.969C20.5274 581.703 20.5694 581.522 20.6311 581.362C20.6941 581.196 20.7927 581.044 20.9201 580.919C21.0449 580.792 21.1959 580.694 21.3626 580.631C21.5221 580.57 21.7034 580.527 21.9696 580.515C22.0361 580.512 22.0916 580.509 22.1476 580.507L22.1961 580.506C22.3784 580.502 22.5608 580.5 22.7431 580.5L23.2571 580.5ZM23.0001 581.75C22.6686 581.75 22.3507 581.882 22.1163 582.116C21.8818 582.351 21.7501 582.668 21.7501 583C21.7501 583.332 21.8818 583.649 22.1163 583.884C22.3507 584.118 22.6686 584.25 23.0001 584.25C23.3317 584.25 23.6496 584.118 23.884 583.884C24.1184 583.649 24.2501 583.332 24.2501 583C24.2501 582.668 24.1184 582.351 23.884 582.116C23.6496 581.882 23.3317 581.75 23.0001 581.75ZM23.0001 582.25C23.0986 582.25 23.1962 582.269 23.2872 582.307C23.3782 582.345 23.4609 582.4 23.5305 582.47C23.6002 582.539 23.6554 582.622 23.6931 582.713C23.7308 582.804 23.7503 582.901 23.7503 583C23.7503 583.098 23.7309 583.196 23.6932 583.287C23.6555 583.378 23.6003 583.461 23.5307 583.53C23.4611 583.6 23.3784 583.655 23.2874 583.693C23.1964 583.731 23.0989 583.75 23.0004 583.75C22.8015 583.75 22.6107 583.671 22.4701 583.53C22.3294 583.39 22.2504 583.199 22.2504 583C22.2504 582.801 22.3294 582.61 22.4701 582.47C22.6107 582.329 22.8015 582.25 23.0004 582.25M24.3129 581.375C24.23 581.375 24.1505 581.408 24.0919 581.467C24.0333 581.525 24.0004 581.605 24.0004 581.688C24.0004 581.77 24.0333 581.85 24.0919 581.908C24.1505 581.967 24.23 582 24.3129 582C24.3958 582 24.4753 581.967 24.5339 581.908C24.5925 581.85 24.6254 581.77 24.6254 581.688C24.6254 581.605 24.5925 581.525 24.5339 581.467C24.4753 581.408 24.3958 581.375 24.3129 581.375Z" fill="black" />
+</g>
+<g clip-path="url(#clip4_65_1067)">
+<path d="M21.8389 591.777V591.376C21.8389 591.352 21.8389 591.342 21.8699 591.342C22.1356 591.342 22.3516 591.327 22.4589 591.39C22.5664 591.453 22.5709 591.54 22.5726 591.566C22.5744 591.592 22.5736 591.629 22.5236 591.72C22.4736 591.811 22.2499 591.812 22.0884 591.812H21.8746C21.8484 591.812 21.8389 591.803 21.8389 591.777ZM22.5754 592.197C22.6001 592.229 22.6178 592.265 22.6272 592.305C22.6366 592.344 22.6375 592.384 22.6298 592.424C22.6221 592.463 22.606 592.5 22.5827 592.533C22.5593 592.566 22.5292 592.593 22.4944 592.613C22.4432 592.634 22.3884 592.646 22.3329 592.646H21.8721C21.8484 592.646 21.8389 592.646 21.8389 592.615V592.14C21.8389 592.117 21.8389 592.107 21.8699 592.107H22.1761C22.3661 592.107 22.4849 592.091 22.5754 592.197Z" fill="black" />
+<path d="M24.2473 591.977C24.2345 591.947 24.2152 591.92 24.1907 591.899C24.1662 591.877 24.1372 591.862 24.1058 591.853C24.043 591.836 23.9772 591.832 23.9129 591.842C23.8486 591.852 23.7872 591.876 23.7327 591.911C23.6785 591.966 23.6434 592.037 23.6328 592.114C23.6328 592.14 23.6327 592.145 23.6645 592.145H24.257C24.2862 592.145 24.2863 592.146 24.2838 592.109C24.2809 592.063 24.2687 592.018 24.2473 591.977ZM24.2473 591.977C24.2345 591.947 24.2149 591.92 24.1904 591.899C24.1659 591.877 24.1372 591.862 24.1058 591.853C24.043 591.836 23.9772 591.832 23.9129 591.842C23.8486 591.852 23.7872 591.876 23.7327 591.911C23.6785 591.966 23.6431 592.037 23.6325 592.114C23.6325 592.14 23.6325 592.145 23.6642 592.145H24.257C24.2862 592.145 24.2863 592.146 24.2838 592.109C24.2809 592.063 24.2682 592.018 24.2467 591.977M24.525 589.625H21.6C21.3414 589.625 21.0934 589.728 20.9106 589.911C20.7277 590.093 20.625 590.341 20.625 590.6V593.525C20.625 593.784 20.7277 594.032 20.9106 594.214C21.0934 594.397 21.3414 594.5 21.6 594.5H24.525C24.7836 594.5 25.0316 594.397 25.2144 594.214C25.3973 594.032 25.5 593.784 25.5 593.525V590.6C25.5 590.341 25.3973 590.093 25.2144 589.911C25.0316 589.728 24.7836 589.625 24.525 589.625ZM23.5695 591.178C23.5695 591.158 23.5695 591.151 23.5915 591.151H24.3812V591.356C24.3812 591.356 24.382 591.37 24.369 591.37H23.6037C23.5695 591.37 23.5695 591.37 23.5695 591.336V591.178ZM22.8382 592.969C22.5382 593.132 22.034 593.067 21.4368 593.067V591.046H22.3898C22.6335 591.046 22.9235 591.107 23.0015 591.365C23.042 591.478 23.0395 591.602 22.9946 591.713C22.9496 591.824 22.8653 591.915 22.7578 591.967C22.8569 592.004 22.9434 592.069 23.0072 592.153C23.0709 592.237 23.1091 592.338 23.1173 592.443C23.1255 592.549 23.1034 592.654 23.0535 592.748C23.0036 592.841 22.928 592.918 22.8358 592.969H22.8382ZM24.6543 592.394H23.6793C23.6525 592.394 23.628 592.408 23.6328 592.443C23.662 592.586 23.7277 592.738 23.8767 592.76C23.9554 592.783 24.0397 592.78 24.1161 592.75C24.1925 592.719 24.2566 592.665 24.2983 592.594C24.2983 592.594 24.3105 592.579 24.3177 592.579H24.6347C24.6347 592.579 24.6543 592.579 24.6493 592.596C24.6158 592.691 24.5663 592.779 24.503 592.857C24.4183 592.938 24.316 592.998 24.2042 593.033C24.0924 593.068 23.9741 593.077 23.8583 593.059C23.7425 593.041 23.6325 592.996 23.5368 592.929C23.4411 592.861 23.3622 592.772 23.3063 592.67C23.2719 592.601 23.2504 592.526 23.243 592.45C23.1995 592.258 23.2328 592.056 23.3356 591.888C23.4385 591.72 23.6029 591.599 23.7938 591.551C24.347 591.431 24.698 591.811 24.698 592.348C24.6988 592.354 24.6982 592.36 24.6962 592.366C24.6941 592.372 24.6907 592.378 24.6863 592.382C24.6818 592.387 24.6764 592.39 24.6704 592.392C24.6644 592.394 24.658 592.395 24.6518 592.394H24.6543ZM24.1083 591.853C24.0455 591.835 23.9798 591.832 23.9155 591.842C23.8512 591.852 23.7937 591.864 23.7352 591.911C23.6767 591.958 23.6458 592.037 23.6353 592.114C23.6353 592.14 23.6353 592.145 23.667 592.145H24.257C24.2862 592.145 24.2863 592.146 24.2838 592.109C24.2809 592.063 24.2687 592.018 24.2473 591.977C24.2345 591.947 24.2152 591.92 24.1907 591.899C24.1662 591.877 24.1372 591.862 24.1058 591.853H24.1083Z" fill="black" />
+</g>
+<g clip-path="url(#clip5_65_1067)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M22.803 599.099C22.3198 599.239 21.8902 599.522 21.5703 599.911C21.2504 600.3 21.0551 600.776 21.0098 601.277H22.1526C22.2192 600.514 22.4404 599.773 22.8026 599.098L22.803 599.099ZM22.1526 601.723H21.0098C21.055 602.224 21.2503 602.7 21.5701 603.089C21.8899 603.478 22.3194 603.761 22.8026 603.902C22.4404 603.227 22.2192 602.486 22.1526 601.723ZM23.3755 603.997C22.9425 603.31 22.677 602.531 22.6005 601.723H24.3987C24.3222 602.531 24.0567 603.31 23.6237 603.997C23.541 604.001 23.4582 604.001 23.3755 603.997ZM24.1969 603.901C24.6801 603.761 25.1095 603.477 25.4294 603.089C25.7492 602.7 25.9445 602.224 25.9898 601.723H24.8469C24.7803 602.486 24.5591 603.227 24.1969 603.902V603.901ZM24.8469 601.277H25.9898C25.9445 600.776 25.7493 600.3 25.4295 599.911C25.1096 599.522 24.6801 599.239 24.1969 599.098C24.5591 599.773 24.7803 600.514 24.8469 601.277ZM23.3755 599.003C23.4583 598.999 23.5412 598.999 23.6241 599.003C24.0569 599.69 24.3223 600.469 24.3987 601.277H22.6008C22.6783 600.464 22.9444 599.684 23.3755 599.003Z" fill="black" />
+</g>
+<g data-about-details="true" transform="translate(0 -84.568)"><foreignObject x="307.6400" y="377.1633" width="131.5930" height="27.8924" data-native-text="true" style="overflow:visible;pointer-events:auto"><div xmlns="http://www.w3.org/1999/xhtml" class="native-copy" style="position:relative;color:black;font-family:&quot;Be Vietnam Pro&quot;,sans-serif;font-size:15.7455px;line-height:1.25;margin:0;overflow-wrap:break-word;user-select:text"><h2 style="margin:0;font:inherit;white-space:pre-line">Work Experience</h2></div></foreignObject><foreignObject x="21.2800" y="377.2177" width="78.1274" height="25.4520" data-native-text="true" style="overflow:visible;pointer-events:auto"><div xmlns="http://www.w3.org/1999/xhtml" class="native-copy" style="position:relative;color:black;font-family:&quot;Be Vietnam Pro&quot;,sans-serif;font-size:15.4255px;line-height:1.25;margin:0;overflow-wrap:break-word;user-select:text"><h2 style="margin:0;font:inherit;white-space:pre-line">Education</h2></div></foreignObject><foreignObject x="617.8640" y="378.2357" width="38.8700" height="25.2773" data-native-text="true" style="overflow:visible;pointer-events:auto"><div xmlns="http://www.w3.org/1999/xhtml" class="native-copy" style="position:relative;color:black;font-family:&quot;Be Vietnam Pro&quot;,sans-serif;font-size:15.3196px;line-height:1.25;margin:0;overflow-wrap:break-word;user-select:text"><h2 style="margin:0;font:inherit;white-space:pre-line">Skills</h2></div></foreignObject><foreignObject x="791.2800" y="377.5798" width="66.1570" height="25.0429" data-native-text="true" style="overflow:visible;pointer-events:auto"><div xmlns="http://www.w3.org/1999/xhtml" class="native-copy" style="position:relative;color:black;font-family:&quot;Be Vietnam Pro&quot;,sans-serif;font-size:15.1775px;line-height:1.25;margin:0;overflow-wrap:break-word;user-select:text"><h2 style="margin:0;font:inherit;white-space:pre-line">Interests</h2></div></foreignObject><foreignObject x="307.2600" y="400.4983" width="217.7910" height="27.0708" data-native-text="true" style="overflow:visible;pointer-events:auto"><div xmlns="http://www.w3.org/1999/xhtml" class="native-copy" style="position:relative;color:black;font-family:&quot;Be Vietnam Pro&quot;,sans-serif;font-size:11.1864px;line-height:1.25;margin:0;overflow-wrap:break-word;user-select:text"><p style="position:absolute;top:0.0000px;left:0;margin:0;font-size:12.1519px;line-height:1.2;font-weight:400">NG Earsafe Intern(Sep-Nov 2025)</p><p style="position:absolute;top:13.2000px;left:0;margin:0;font-size:9.0590px;line-height:1.2;font-weight:400">JAIN Deemed-To-Be University, Bangalore, India</p></div></foreignObject><foreignObject x="617.4200" y="401.7170" width="89.2550" height="55.4143" data-native-text="true" style="overflow:visible;pointer-events:auto"><div xmlns="http://www.w3.org/1999/xhtml" class="native-copy" style="position:relative;color:black;font-family:&quot;Be Vietnam Pro&quot;,sans-serif;font-size:11.0763px;line-height:1.25;margin:0;overflow-wrap:break-word;user-select:text"><p style="position:absolute;top:0.0000px;left:0;margin:0;font-size:9.2288px;line-height:1.2;font-weight:400">Industrial Designing</p><p style="position:absolute;top:13.0700px;left:0;margin:0;font-size:11.9620px;line-height:1.2;font-weight:400">Prototyping</p><p style="position:absolute;top:26.0000px;left:0;margin:0;font-size:12.0506px;line-height:1.2;font-weight:400">Sketching</p><p style="position:absolute;top:39.0000px;left:0;margin:0;font-size:11.1786px;line-height:1.2;font-weight:400">Problem Solving</p></div></foreignObject><foreignObject x="617.2400" y="453.7271" width="63.6610" height="39.7006" data-native-text="true" style="overflow:visible;pointer-events:auto"><div xmlns="http://www.w3.org/1999/xhtml" class="native-copy" style="position:relative;color:black;font-family:&quot;Be Vietnam Pro&quot;,sans-serif;font-size:11.0169px;line-height:1.25;margin:0;overflow-wrap:break-word;user-select:text"><p style="position:absolute;top:0.0000px;left:0;margin:0;font-size:12.0506px;line-height:1.2;font-weight:400">Rendering</p><p style="position:absolute;top:13.0000px;left:0;margin:0;font-size:9.6610px;line-height:1.2;font-weight:400">Visual Design</p><p style="position:absolute;top:26.0000px;left:0;margin:0;font-size:8.9172px;line-height:1.2;font-weight:400">Aptitude Skills</p></div></foreignObject><foreignObject x="790.2000" y="400.8072" width="58.7210" height="69.2144" data-native-text="true" style="overflow:visible;pointer-events:auto"><div xmlns="http://www.w3.org/1999/xhtml" class="native-copy" style="position:relative;color:black;font-family:&quot;Be Vietnam Pro&quot;,sans-serif;font-size:10.9576px;line-height:1.25;margin:0;overflow-wrap:break-word;user-select:text"><p style="position:absolute;top:0.0000px;left:0;margin:0;font-size:11.9620px;line-height:1.2;font-weight:400">Painting</p><p style="position:absolute;top:12.9300px;left:0;margin:0;font-size:11.7966px;line-height:1.2;font-weight:400">Sketching</p><p style="position:absolute;top:25.9300px;left:0;margin:0;font-size:8.8556px;line-height:1.2;font-weight:400">Video Games</p><p style="position:absolute;top:39.0000px;left:0;margin:0;font-size:9.4304px;line-height:1.2;font-weight:400">Movies</p><p style="position:absolute;top:51.9300px;left:0;margin:0;font-size:11.9037px;line-height:1.2;font-weight:400">Travelling</p></div></foreignObject><foreignObject x="20.2600" y="400.4983" width="217.7910" height="27.0708" data-native-text="true" style="overflow:visible;pointer-events:auto"><div xmlns="http://www.w3.org/1999/xhtml" class="native-copy" style="position:relative;color:black;font-family:&quot;Be Vietnam Pro&quot;,sans-serif;font-size:11.1864px;line-height:1.25;margin:0;overflow-wrap:break-word;user-select:text"><p style="position:absolute;top:0.0000px;left:0;margin:0;font-size:10.1437px;line-height:1.2;font-weight:400">B. Design in Product Design (2022-Present)</p><p style="position:absolute;top:13.2000px;left:0;margin:0;font-size:9.0590px;line-height:1.2;font-weight:400">JAIN Deemed-To-Be University, Bangalore, India</p></div></foreignObject><foreignObject x="20.6300" y="434.4983" width="158.8470" height="26.9684" data-native-text="true" style="overflow:visible;pointer-events:auto"><div xmlns="http://www.w3.org/1999/xhtml" class="native-copy" style="position:relative;color:black;font-family:&quot;Be Vietnam Pro&quot;,sans-serif;font-size:11.1864px;line-height:1.25;margin:0;overflow-wrap:break-word;user-select:text"><p style="position:absolute;top:0.0000px;left:0;margin:0;font-size:10.0220px;line-height:1.2;font-weight:400">Higher Secondary (2020-2022)</p><p style="position:absolute;top:13.2000px;left:0;margin:0;font-size:8.9737px;line-height:1.2;font-weight:400">Camford Public School, Patna, India</p></div></foreignObject><foreignObject x="929.3760" y="378.4810" width="69.2070" height="25.6236" data-native-text="true" style="overflow:visible;pointer-events:auto"><div xmlns="http://www.w3.org/1999/xhtml" class="native-copy" style="position:relative;color:black;font-family:&quot;Be Vietnam Pro&quot;,sans-serif;font-size:13.8295px;line-height:1.25;margin:0;overflow-wrap:break-word;user-select:text"><h2 style="margin:0;font:inherit;white-space:pre-line">Language</h2></div></foreignObject><foreignObject x="928.9900" y="401.7271" width="31.2740" height="27.4228" data-native-text="true" style="overflow:visible;pointer-events:auto"><div xmlns="http://www.w3.org/1999/xhtml" class="native-copy" style="position:relative;color:black;font-family:&quot;Be Vietnam Pro&quot;,sans-serif;font-size:11.0169px;line-height:1.25;margin:0;overflow-wrap:break-word;user-select:text"><p style="position:absolute;top:0.0000px;left:0;margin:0;font-size:8.7853px;line-height:1.2;font-weight:400">English</p><p style="position:absolute;top:13.0000px;left:0;margin:0;font-size:9.5190px;line-height:1.2;font-weight:400">Hindi</p></div></foreignObject></g></g>
+<defs>
+<pattern id="pattern0_65_1067" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image0_65_1067" transform="matrix(0.00510663 0 0 0.00262732 -4.83099 -4.89568)" />
+</pattern>
+<pattern id="pattern1_65_1067" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image1_65_1067" transform="matrix(0.0037157 0 0 0.0013751 -1.76596 -0.829594)" />
+</pattern>
+<clipPath id="clip0_65_1067">
+<rect width="1280" height="753" fill="white" />
+</clipPath>
+<clipPath id="clip1_65_1067">
+<rect width="7" height="7" fill="white" transform="translate(20 553)" />
+</clipPath>
+<clipPath id="clip2_65_1067">
+<rect width="6" height="6" fill="white" transform="translate(20 571)" />
+</clipPath>
+<clipPath id="clip3_65_1067">
+<rect width="6" height="6" fill="white" transform="translate(20 580)" />
+</clipPath>
+<clipPath id="clip4_65_1067">
+<rect width="6" height="6" fill="white" transform="translate(20 589)" />
+</clipPath>
+<clipPath id="clip5_65_1067">
+<rect width="5" height="5" fill="white" transform="translate(21 599)" />
+</clipPath>
+<image id="image0_65_1067" width="2303" height="3302" preserveAspectRatio="none" data-image-src="images/web/1cc9f13f1624c18cb9b02e9e.webp" />
+<image id="image1_65_1067" width="2279" height="3268" preserveAspectRatio="none" data-image-src="images/web/bc9a4dfb50102e0906734ada.webp" />
+</defs>
+<g class="desktop-links" /></svg><article class="about-mobile-reference" aria-labelledby="about-reference-title">
+<nav class="about-reference-nav" aria-label="Page">
+<a href="index.html">&lt; go back to home</a><a href="index.html#contact">contact</a>
+</nav>
+<header class="about-reference-intro">
+<h1 id="about-reference-title">About me</h1>
+<p>I am just a guy who loves drawing. Sometimes the sketch<br>
+becomes a physical product, other times it becomes an<br>
+fun illustration. I recently graduated with a B.Des<br>
+Industrial Design degree and currently looking for a full<br>
+time opportunity as a creative.</p>
+</header>
+<section class="about-reference-education" aria-labelledby="about-reference-education">
+<h2 id="about-reference-education">Education</h2>
+<div class="about-reference-entry"><h3>B. Design in Industrial design (2022-2026)</h3><p>JAIN Deemed-To-Be University, Bangalore, India</p></div>
+<div class="about-reference-entry"><h3>Higher Secondary (2020-2022)</h3><p>Camford Public School, Patna, India</p></div>
+</section>
+<section class="about-reference-work" aria-labelledby="about-reference-work">
+<h2 id="about-reference-work">Work Experience</h2>
+<div class="about-reference-entry"><h3>NG Earsafe Intern(Sep-Nov 2025)</h3><p>Gachibowli, Hyderabad, India</p></div>
+</section>
+<div class="about-reference-columns">
+<section aria-labelledby="about-reference-skills"><h2 id="about-reference-skills">Skills</h2>
+<ul><li>Industrial Designing</li><li>Prototyping</li><li>Sketching</li><li>Problem Solving</li></ul>
+<ul><li>Rendering</li><li>Visual Design</li><li>Aptitude Skills</li></ul></section>
+<section aria-labelledby="about-reference-interests"><h2 id="about-reference-interests">Interests</h2>
+<ul><li>Painting</li><li>Sketching</li><li>Video Games</li><li>Movies</li><li>Travelling</li></ul></section>
+</div>
+<section class="about-reference-language" aria-labelledby="about-reference-language">
+<h2 id="about-reference-language">Language</h2><ul><li>English</li><li>Hindi</li></ul>
+</section>
+<address class="about-reference-socials" aria-label="Contact and social links"><a href="https://www.linkedin.com/in/kushal-shresth-a55327279/" aria-label="LinkedIn"><span class="about-reference-social-icon" style="--icon-row:0" aria-hidden="true"></span><span>linkedin.com/in/kushal-shresth-a55327279/</span></a><a href="mailto:kushalsshresth@gmail.com" aria-label="Email Kushal"><span class="about-reference-social-icon" style="--icon-row:1" aria-hidden="true"></span><span>kushalsshresth@gmail.com</span></a><a href="tel:+918757890817" aria-label="Call Kushal"><span class="about-reference-social-icon" style="--icon-row:2" aria-hidden="true"></span><span>+91 8757890817</span></a><a href="https://www.instagram.com/kushaalshresth/" aria-label="Instagram"><span class="about-reference-social-icon" style="--icon-row:3" aria-hidden="true"></span><span>@kushaalshresth</span></a><a href="https://www.behance.net/kuzl" aria-label="Behance"><span class="about-reference-social-icon" style="--icon-row:4" aria-hidden="true"></span><span>behance.net/kuzl</span></a><a href="https://www.kuzh.in/" aria-label="Website"><span class="about-reference-social-icon" style="--icon-row:5" aria-hidden="true"></span><span>www.kuzh.in</span></a></address>
+<nav class="about-reference-footer" aria-label="Portfolio sections">
+<a href="cv.html">view cv</a><a href="illustrations.html">illustrations</a><a href="about.html" aria-current="page">about me</a><a href="index.html#contact">contact</a>
+</nav>
+</article><footer class="about-contacts" aria-label="Contact and social links"><a class="about-contact-link native-contact-link" href="https://www.linkedin.com/in/kushal-shresth-a55327279/" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="20 552.5 9 9" fill="none" class="mobile-source-artwork" aria-label="Kushal Singh Shresth — About"><g clip-path="url(#about-mobile-contact-icon-0-clip0_65_1067)">
+<rect width="1280" height="753" fill="#F1F1F1" /><g clip-path="url(#about-mobile-contact-icon-0-clip1_65_1067)">
+<path d="M25.5417 553.875C25.6964 553.875 25.8447 553.936 25.9541 554.046C26.0635 554.155 26.125 554.304 26.125 554.458V558.542C26.125 558.696 26.0635 558.845 25.9541 558.954C25.8447 559.064 25.6964 559.125 25.5417 559.125H21.4583C21.3036 559.125 21.1553 559.064 21.0459 558.954C20.9365 558.845 20.875 558.696 20.875 558.542V554.458C20.875 554.304 20.9365 554.155 21.0459 554.046C21.1553 553.936 21.3036 553.875 21.4583 553.875H25.5417ZM25.3958 558.396V556.85C25.3958 556.598 25.2957 556.356 25.1173 556.178C24.939 555.999 24.6972 555.899 24.445 555.899C24.1971 555.899 23.9083 556.051 23.7683 556.278V555.955H22.9546V558.396H23.7683V556.958C23.7683 556.733 23.9492 556.55 24.1738 556.55C24.282 556.55 24.3859 556.593 24.4625 556.669C24.5391 556.746 24.5821 556.85 24.5821 556.958V558.396H25.3958ZM22.0067 555.497C22.1366 555.497 22.2613 555.445 22.3531 555.353C22.445 555.261 22.4967 555.137 22.4967 555.007C22.4967 554.735 22.2779 554.514 22.0067 554.514C21.8759 554.514 21.7506 554.566 21.6581 554.658C21.5657 554.751 21.5137 554.876 21.5137 555.007C21.5137 555.278 21.7354 555.497 22.0067 555.497ZM22.4121 558.396V555.955H21.6042V558.396H22.4121Z" fill="black" /></g></g><g class="desktop-links" /><defs><clipPath id="about-mobile-contact-icon-0-clip1_65_1067">
+<rect width="7" height="7" fill="white" transform="translate(20 553)" />
+</clipPath>
+<clipPath id="about-mobile-contact-icon-0-clip0_65_1067">
+<rect width="1280" height="753" fill="white" />
+</clipPath>
+</defs></svg><span>linkedin.com/in/kushal-shresth-a55327279/</span></a><a class="about-contact-link native-contact-link" href="mailto:kushalsshresth@gmail.com" aria-label="Email Kushal"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="20 561.5 9 9" fill="none" class="mobile-source-artwork" aria-label="Kushal Singh Shresth — About"><g clip-path="url(#about-mobile-contact-icon-1-clip0_65_1067)">
+<rect width="1280" height="753" fill="#F1F1F1" /><path d="M21 567C20.8625 567 20.7448 566.951 20.647 566.853C20.5492 566.755 20.5002 566.638 20.5 566.5V563.5C20.5 563.362 20.549 563.245 20.647 563.147C20.745 563.049 20.8627 563 21 563H25C25.1375 563 25.2553 563.049 25.3533 563.147C25.4513 563.245 25.5002 563.363 25.5 563.5V566.5C25.5 566.638 25.4511 566.755 25.3533 566.853C25.2554 566.951 25.1377 567 25 567H21ZM23 565.25L25 564V563.5L23 564.75L21 563.5V564L23 565.25Z" fill="black" /></g><g class="desktop-links" /><defs><clipPath id="about-mobile-contact-icon-1-clip0_65_1067">
+<rect width="1280" height="753" fill="white" />
+</clipPath>
+</defs></svg><span>kushalsshresth@gmail.com</span></a><a class="about-contact-link native-contact-link" href="tel:+918757890817" aria-label="Call Kushal"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="20 570.5 9 9" fill="none" class="mobile-source-artwork" aria-label="Kushal Singh Shresth — About"><g clip-path="url(#about-mobile-contact-icon-2-clip0_65_1067)">
+<rect width="1280" height="753" fill="#F1F1F1" /><g clip-path="url(#about-mobile-contact-icon-2-clip2_65_1067)">
+<path d="M21.655 573.697C22.015 574.405 22.595 574.982 23.3025 575.345L23.8525 574.795C23.92 574.728 24.02 574.705 24.1075 574.735C24.3875 574.827 24.69 574.878 25 574.878C25.1375 574.878 25.25 574.99 25.25 575.128V576C25.25 576.138 25.1375 576.25 25 576.25C22.6525 576.25 20.75 574.348 20.75 572C20.75 571.862 20.8625 571.75 21 571.75H21.875C22.0125 571.75 22.125 571.862 22.125 572C22.125 572.312 22.175 572.613 22.2675 572.893C22.295 572.98 22.275 573.078 22.205 573.148L21.655 573.697Z" fill="black" /></g></g><g class="desktop-links" /><defs><clipPath id="about-mobile-contact-icon-2-clip2_65_1067">
+<rect width="6" height="6" fill="white" transform="translate(20 571)" />
+</clipPath>
+<clipPath id="about-mobile-contact-icon-2-clip0_65_1067">
+<rect width="1280" height="753" fill="white" />
+</clipPath>
+</defs></svg><span>+91 8757890817</span></a><a class="about-contact-link native-contact-link" href="https://www.instagram.com/kushaalshresth/" aria-label="Instagram"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="20 579.5 9 9" fill="none" class="mobile-source-artwork" aria-label="Kushal Singh Shresth — About"><g clip-path="url(#about-mobile-contact-icon-3-clip0_65_1067)">
+<rect width="1280" height="753" fill="#F1F1F1" /><g clip-path="url(#about-mobile-contact-icon-3-clip3_65_1067)">
+<path d="M23.2571 580.5C23.5384 580.501 23.6811 580.502 23.8044 580.506L23.8529 580.507C23.9089 580.509 23.9641 580.512 24.0309 580.515C24.2969 580.527 24.4784 580.57 24.6376 580.631C24.8026 580.695 24.9416 580.781 25.0806 580.919C25.2078 581.044 25.3062 581.196 25.3689 581.362C25.4306 581.522 25.4726 581.703 25.4851 581.969C25.4881 582.036 25.4906 582.091 25.4926 582.148L25.4941 582.196C25.4979 582.319 25.4994 582.462 25.4999 582.743L25.5001 582.93V583.257C25.5008 583.439 25.4988 583.622 25.4944 583.804L25.4929 583.852C25.4909 583.909 25.4884 583.964 25.4854 584.03C25.4729 584.297 25.4304 584.478 25.3689 584.637C25.3062 584.804 25.2078 584.956 25.0806 585.081C24.9557 585.208 24.8045 585.306 24.6376 585.369C24.4784 585.431 24.2969 585.473 24.0309 585.485L23.8529 585.492L23.8044 585.494C23.6811 585.497 23.5384 585.499 23.2571 585.5L23.0706 585.5H22.7434C22.561 585.501 22.3785 585.499 22.1961 585.494L22.1476 585.493C22.0883 585.491 22.029 585.488 21.9696 585.485C21.7036 585.473 21.5221 585.431 21.3626 585.369C21.1958 585.306 21.0448 585.208 20.9199 585.081C20.7926 584.956 20.6942 584.804 20.6314 584.637C20.5696 584.478 20.5276 584.297 20.5151 584.03L20.5076 583.852L20.5064 583.804C20.5018 583.622 20.4997 583.439 20.5001 583.257V582.743C20.4995 582.561 20.5013 582.378 20.5056 582.196L20.5074 582.148C20.5094 582.091 20.5119 582.036 20.5149 581.969C20.5274 581.703 20.5694 581.522 20.6311 581.362C20.6941 581.196 20.7927 581.044 20.9201 580.919C21.0449 580.792 21.1959 580.694 21.3626 580.631C21.5221 580.57 21.7034 580.527 21.9696 580.515C22.0361 580.512 22.0916 580.509 22.1476 580.507L22.1961 580.506C22.3784 580.502 22.5608 580.5 22.7431 580.5L23.2571 580.5ZM23.0001 581.75C22.6686 581.75 22.3507 581.882 22.1163 582.116C21.8818 582.351 21.7501 582.668 21.7501 583C21.7501 583.332 21.8818 583.649 22.1163 583.884C22.3507 584.118 22.6686 584.25 23.0001 584.25C23.3317 584.25 23.6496 584.118 23.884 583.884C24.1184 583.649 24.2501 583.332 24.2501 583C24.2501 582.668 24.1184 582.351 23.884 582.116C23.6496 581.882 23.3317 581.75 23.0001 581.75ZM23.0001 582.25C23.0986 582.25 23.1962 582.269 23.2872 582.307C23.3782 582.345 23.4609 582.4 23.5305 582.47C23.6002 582.539 23.6554 582.622 23.6931 582.713C23.7308 582.804 23.7503 582.901 23.7503 583C23.7503 583.098 23.7309 583.196 23.6932 583.287C23.6555 583.378 23.6003 583.461 23.5307 583.53C23.4611 583.6 23.3784 583.655 23.2874 583.693C23.1964 583.731 23.0989 583.75 23.0004 583.75C22.8015 583.75 22.6107 583.671 22.4701 583.53C22.3294 583.39 22.2504 583.199 22.2504 583C22.2504 582.801 22.3294 582.61 22.4701 582.47C22.6107 582.329 22.8015 582.25 23.0004 582.25M24.3129 581.375C24.23 581.375 24.1505 581.408 24.0919 581.467C24.0333 581.525 24.0004 581.605 24.0004 581.688C24.0004 581.77 24.0333 581.85 24.0919 581.908C24.1505 581.967 24.23 582 24.3129 582C24.3958 582 24.4753 581.967 24.5339 581.908C24.5925 581.85 24.6254 581.77 24.6254 581.688C24.6254 581.605 24.5925 581.525 24.5339 581.467C24.4753 581.408 24.3958 581.375 24.3129 581.375Z" fill="black" /></g></g><g class="desktop-links" /><defs><clipPath id="about-mobile-contact-icon-3-clip3_65_1067">
+<rect width="6" height="6" fill="white" transform="translate(20 580)" />
+</clipPath>
+<clipPath id="about-mobile-contact-icon-3-clip0_65_1067">
+<rect width="1280" height="753" fill="white" />
+</clipPath>
+</defs></svg><span>@kushaalshresth</span></a><a class="about-contact-link native-contact-link" href="https://www.behance.net/kuzl" aria-label="Behance"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="20 588.5 9 9" fill="none" class="mobile-source-artwork" aria-label="Kushal Singh Shresth — About"><g clip-path="url(#about-mobile-contact-icon-4-clip0_65_1067)">
+<rect width="1280" height="753" fill="#F1F1F1" /><g clip-path="url(#about-mobile-contact-icon-4-clip4_65_1067)">
+<path d="M21.8389 591.777V591.376C21.8389 591.352 21.8389 591.342 21.8699 591.342C22.1356 591.342 22.3516 591.327 22.4589 591.39C22.5664 591.453 22.5709 591.54 22.5726 591.566C22.5744 591.592 22.5736 591.629 22.5236 591.72C22.4736 591.811 22.2499 591.812 22.0884 591.812H21.8746C21.8484 591.812 21.8389 591.803 21.8389 591.777ZM22.5754 592.197C22.6001 592.229 22.6178 592.265 22.6272 592.305C22.6366 592.344 22.6375 592.384 22.6298 592.424C22.6221 592.463 22.606 592.5 22.5827 592.533C22.5593 592.566 22.5292 592.593 22.4944 592.613C22.4432 592.634 22.3884 592.646 22.3329 592.646H21.8721C21.8484 592.646 21.8389 592.646 21.8389 592.615V592.14C21.8389 592.117 21.8389 592.107 21.8699 592.107H22.1761C22.3661 592.107 22.4849 592.091 22.5754 592.197Z" fill="black" /><path d="M24.2473 591.977C24.2345 591.947 24.2152 591.92 24.1907 591.899C24.1662 591.877 24.1372 591.862 24.1058 591.853C24.043 591.836 23.9772 591.832 23.9129 591.842C23.8486 591.852 23.7872 591.876 23.7327 591.911C23.6785 591.966 23.6434 592.037 23.6328 592.114C23.6328 592.14 23.6327 592.145 23.6645 592.145H24.257C24.2862 592.145 24.2863 592.146 24.2838 592.109C24.2809 592.063 24.2687 592.018 24.2473 591.977ZM24.2473 591.977C24.2345 591.947 24.2149 591.92 24.1904 591.899C24.1659 591.877 24.1372 591.862 24.1058 591.853C24.043 591.836 23.9772 591.832 23.9129 591.842C23.8486 591.852 23.7872 591.876 23.7327 591.911C23.6785 591.966 23.6431 592.037 23.6325 592.114C23.6325 592.14 23.6325 592.145 23.6642 592.145H24.257C24.2862 592.145 24.2863 592.146 24.2838 592.109C24.2809 592.063 24.2682 592.018 24.2467 591.977M24.525 589.625H21.6C21.3414 589.625 21.0934 589.728 20.9106 589.911C20.7277 590.093 20.625 590.341 20.625 590.6V593.525C20.625 593.784 20.7277 594.032 20.9106 594.214C21.0934 594.397 21.3414 594.5 21.6 594.5H24.525C24.7836 594.5 25.0316 594.397 25.2144 594.214C25.3973 594.032 25.5 593.784 25.5 593.525V590.6C25.5 590.341 25.3973 590.093 25.2144 589.911C25.0316 589.728 24.7836 589.625 24.525 589.625ZM23.5695 591.178C23.5695 591.158 23.5695 591.151 23.5915 591.151H24.3812V591.356C24.3812 591.356 24.382 591.37 24.369 591.37H23.6037C23.5695 591.37 23.5695 591.37 23.5695 591.336V591.178ZM22.8382 592.969C22.5382 593.132 22.034 593.067 21.4368 593.067V591.046H22.3898C22.6335 591.046 22.9235 591.107 23.0015 591.365C23.042 591.478 23.0395 591.602 22.9946 591.713C22.9496 591.824 22.8653 591.915 22.7578 591.967C22.8569 592.004 22.9434 592.069 23.0072 592.153C23.0709 592.237 23.1091 592.338 23.1173 592.443C23.1255 592.549 23.1034 592.654 23.0535 592.748C23.0036 592.841 22.928 592.918 22.8358 592.969H22.8382ZM24.6543 592.394H23.6793C23.6525 592.394 23.628 592.408 23.6328 592.443C23.662 592.586 23.7277 592.738 23.8767 592.76C23.9554 592.783 24.0397 592.78 24.1161 592.75C24.1925 592.719 24.2566 592.665 24.2983 592.594C24.2983 592.594 24.3105 592.579 24.3177 592.579H24.6347C24.6347 592.579 24.6543 592.579 24.6493 592.596C24.6158 592.691 24.5663 592.779 24.503 592.857C24.4183 592.938 24.316 592.998 24.2042 593.033C24.0924 593.068 23.9741 593.077 23.8583 593.059C23.7425 593.041 23.6325 592.996 23.5368 592.929C23.4411 592.861 23.3622 592.772 23.3063 592.67C23.2719 592.601 23.2504 592.526 23.243 592.45C23.1995 592.258 23.2328 592.056 23.3356 591.888C23.4385 591.72 23.6029 591.599 23.7938 591.551C24.347 591.431 24.698 591.811 24.698 592.348C24.6988 592.354 24.6982 592.36 24.6962 592.366C24.6941 592.372 24.6907 592.378 24.6863 592.382C24.6818 592.387 24.6764 592.39 24.6704 592.392C24.6644 592.394 24.658 592.395 24.6518 592.394H24.6543ZM24.1083 591.853C24.0455 591.835 23.9798 591.832 23.9155 591.842C23.8512 591.852 23.7937 591.864 23.7352 591.911C23.6767 591.958 23.6458 592.037 23.6353 592.114C23.6353 592.14 23.6353 592.145 23.667 592.145H24.257C24.2862 592.145 24.2863 592.146 24.2838 592.109C24.2809 592.063 24.2687 592.018 24.2473 591.977C24.2345 591.947 24.2152 591.92 24.1907 591.899C24.1662 591.877 24.1372 591.862 24.1058 591.853H24.1083Z" fill="black" /></g></g><g class="desktop-links" /><defs><clipPath id="about-mobile-contact-icon-4-clip4_65_1067">
+<rect width="6" height="6" fill="white" transform="translate(20 589)" />
+</clipPath>
+<clipPath id="about-mobile-contact-icon-4-clip0_65_1067">
+<rect width="1280" height="753" fill="white" />
+</clipPath>
+</defs></svg><span>behance.net/kuzl</span></a><a class="about-contact-link native-contact-link" href="https://www.kuzh.in/" aria-label="Website"><svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="20 597.5 9 9" fill="none" class="mobile-source-artwork" aria-label="Kushal Singh Shresth — About"><g clip-path="url(#about-mobile-contact-icon-5-clip0_65_1067)">
+<rect width="1280" height="753" fill="#F1F1F1" /><g clip-path="url(#about-mobile-contact-icon-5-clip5_65_1067)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M22.803 599.099C22.3198 599.239 21.8902 599.522 21.5703 599.911C21.2504 600.3 21.0551 600.776 21.0098 601.277H22.1526C22.2192 600.514 22.4404 599.773 22.8026 599.098L22.803 599.099ZM22.1526 601.723H21.0098C21.055 602.224 21.2503 602.7 21.5701 603.089C21.8899 603.478 22.3194 603.761 22.8026 603.902C22.4404 603.227 22.2192 602.486 22.1526 601.723ZM23.3755 603.997C22.9425 603.31 22.677 602.531 22.6005 601.723H24.3987C24.3222 602.531 24.0567 603.31 23.6237 603.997C23.541 604.001 23.4582 604.001 23.3755 603.997ZM24.1969 603.901C24.6801 603.761 25.1095 603.477 25.4294 603.089C25.7492 602.7 25.9445 602.224 25.9898 601.723H24.8469C24.7803 602.486 24.5591 603.227 24.1969 603.902V603.901ZM24.8469 601.277H25.9898C25.9445 600.776 25.7493 600.3 25.4295 599.911C25.1096 599.522 24.6801 599.239 24.1969 599.098C24.5591 599.773 24.7803 600.514 24.8469 601.277ZM23.3755 599.003C23.4583 598.999 23.5412 598.999 23.6241 599.003C24.0569 599.69 24.3223 600.469 24.3987 601.277H22.6008C22.6783 600.464 22.9444 599.684 23.3755 599.003Z" fill="black" /></g></g><g class="desktop-links" /><defs><clipPath id="about-mobile-contact-icon-5-clip5_65_1067">
+<rect width="5" height="5" fill="white" transform="translate(21 599)" />
+</clipPath>
+<clipPath id="about-mobile-contact-icon-5-clip0_65_1067">
+<rect width="1280" height="753" fill="white" />
+</clipPath>
+</defs></svg><span>www.kuzh.in</span></a></footer><nav class="mobile-contact-footer" aria-label="Portfolio links"><a href="index.html">home</a><a href="index.html#contact">contact</a><a href="cv.html">view cv</a><a href="illustrations.html">illustrations</a></nav></main>
+<script>window.portfolioStartup.ready();</script>
+<dialog id="link-dialog" aria-labelledby="dialog-title"><h2 id="dialog-title"></h2><p id="dialog-message"></p><form method="dialog"><button>Close</button></form></dialog>
+<script src="links.js"></script>
+<script>self.ModelViewerElement=self.ModelViewerElement||{};self.ModelViewerElement.meshoptDecoderLocation='vendor/meshopt_decoder.js';</script>
+<script type="module" src="site.js"></script></body></html>
